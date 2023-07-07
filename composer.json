@@ -1,26 +1,26 @@
 {
-    "name": "wisus/mango-php-framework",
-    "autoload": {
-        "psr-4": {
-            "App\\": "App/",
-            "Core\\": "Core/"
-        },
-        "files": [
-            "Core/helpers.php"
-        ]
-    },
-    "authors": [
-        {
-            "name": "Jesus Avelar",
-            "email": "j.avelar@pagadito.com"
-        }
-    ],
-    "require": {
-        "php": "^8.0",
-        "ext-pdo": "*",
-        "ext-json": "*"
-    },
-    "require-dev": {
-        "filp/whoops": "^2.15"
-    }
+	"name": "wisus/mango",
+	"autoload": {
+		"psr-4": {
+			"App\\": "App/",
+			"Core\\": "Core/"
+		},
+		"files": [
+			"Core/helpers.php"
+		]
+	},
+	"authors": [
+		{
+			"name": "Jesus Avelar",
+			"email": "wisusdev@gmail.com"
+		}
+	],
+	"require": {
+		"php": "^8.1",
+		"ext-pdo": "*",
+		"ext-json": "*"
+	},
+	"require-dev": {
+		"filp/whoops": "^2.15"
+	}
 }
