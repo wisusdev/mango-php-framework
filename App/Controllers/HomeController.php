@@ -5,10 +5,11 @@ namespace App\Controllers;
 class HomeController
 {
 	public function index(){
-		echo "YES";
+		echo "index YES";
 	}
 
-	public function show(){
-		echo 'show';
+	public function show($params){
+		print_r($params);
+		echo 'show YES';
 	}
 }
