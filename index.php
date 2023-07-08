@@ -1,6 +1,7 @@
 <?php
 
 require "vendor/autoload.php";
+require_once "core/bootstrap.php";
 
 use Core\Route;
 use Core\Whoops;
