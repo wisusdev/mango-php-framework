@@ -32,7 +32,7 @@ trait HttpResponse
      * @param int $status
      * @param array|null $data
      */
-    public function sendError(string $message = 'Data Fetch Failed', int $status = HttpStatus::BAD_REQUEST, ?array $data = [])
+    public function sendError(string $message = 'Data Fetch Failed', int $status = HttpStatus::BAD_REQUEST, ?array $data = []) : void
     {
         $this->headers($status);
 
