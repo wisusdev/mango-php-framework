@@ -1,11 +1,12 @@
 <?php
 
 return [
-    'host' => 'smtp.mailtrap.io',
+    'host' => 'smtp.mailgun.org',
     'auth' => true,
-    'username' => '58152c627d3878',
-    'password' => '1b118d3260f9fb',
+    'username' => '',
+    'password' => '',
     'port' => '465',
-    'from_address' => 'salah@app.com',
-    'from_name' => 'Mohamed Salah',
+	'secure' => 'ssl',
+    'from_address' => 'info@wisus.dev',
+    'from_name' => 'Mango Team',
 ];
