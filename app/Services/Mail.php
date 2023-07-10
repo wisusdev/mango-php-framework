@@ -22,6 +22,7 @@ class Mail
         $this->mailer->Username = $this->mailSetting['username'];
         $this->mailer->Password = $this->mailSetting['password'];
         $this->mailer->Port = $this->mailSetting['port'];
+		$this->mailer->SMTPSecure = $this->mailSetting['secure'];
         $this->mailer->setFrom($this->mailSetting['from_address'], $this->mailSetting['from_name']);
         $this->mailer->isHTML(true);
     }
