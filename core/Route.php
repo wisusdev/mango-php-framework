@@ -7,120 +7,159 @@ use Exception;
 
 class Route
 {
+	/**
+	 * Keep all the routes
+	 *
+	 * @var array
+	 */
+	private static array $routes = array();
 
-    public static function load(string $file): Route
-    {
-        $route = new static;
-        require $file;
-        return $route;
-    }
+	/**
+	 * Route Request Method
+	 *
+	 * @var string
+	 */
+	private string $method;
 
-    /**
-     * @throws Exception
-     */
-    function add($route, $action): void
-    {
-        $requestURI = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-        $requestMethod = $_SERVER['REQUEST_METHOD'];
+	/**
+	 * Route Path
+	 *
+	 * @var string
+	 */
+	private string $path;
 
-        //almacenará todos los valores de los parámetros
-        $params = [];
+	/**
+	 * Route Action
+	 *
+	 * @var string
+	 */
+	private string $action;
 
-        //almacenará todos los nombres de los parámetros
-        $paramKey = [];
+	/**
+	 * Constructor
+	 *
+	 * @param string $method
+	 * @param string $path
+	 * @param string $action
+	 */
+	public function __construct(string $method, string $path, string $action)
+	{
+		$this->method = $method;
+		$this->path = $path;
+		$this->action = $action;
+	}
 
-        //buscar si hay algún parámetro {?} en $route
-        preg_match_all("/(?<={).+?(?=})/", $route, $paramMatches);
+	/**
+	 * Add GET requests to routes
+	 *
+	 * @param string $path
+	 * @param string $action
+	 * @return void
+	 */
+	public static function get(string $path, string $action): void
+	{
+		self::$routes[] = new Route('get', $path, $action);
+	}
 
-        //configuración de los nombres de los parámetros
-        foreach ($paramMatches[0] as $key) {
-            $paramKey[] = $key;
-        }
+	/**
+	 * Add POST requests to routes
+	 *
+	 * @param string $path
+	 * @param string $action
+	 * @return void
+	 */
+	public static function post(string $path, string $action)
+	{
+		self::$routes[] = new Route('post', $path, $action);
+	}
 
-        //sustitución de la primera y la última barras inclinadas
-        //$_SERVER['REQUEST_URI'] estará vacío si req uri es /
+	public static function put(string $path, string $action)
+	{
+		self::$routes[] = new Route('put', $path, $action);
+	}
 
-        if (!empty($requestURI)) {
-            $route = preg_replace("/(^\/)|(\/$)/", "", $route);
-            $reqUri =  preg_replace("/(^\/)|(\/$)/", "", $requestURI);
-        } else {
-            $reqUri = "/";
-        }
+	public static function delete(string $path, string $action)
+	{
+		self::$routes[] = new Route('delete', $path, $action);
+	}
 
-        //si la ruta no contiene ningún parámetro llama a simpleRoute();
-        if (empty($paramMatches[0])) {
-            if ($reqUri == $route) {
-                $controller = $action[0];
-                $action = $action[1];
-    
-                $this->callAction($controller, $action);
-            }
+	/**
+	 * Get the routes array
+	 *
+	 * @return array
+	 */
+	public static function getRoutes(): array
+	{
+		return self::$routes;
+	}
 
-            return;
-        }
+	/**
+	 * Handle route to destinated controller function
+	 *
+	 * @param string $path
+	 * @return void
+	 */
+	public static function handle(string $path): void
+	{
+		$desired_route = null;
+		foreach (self::$routes as $route) {
+			$pattern = $route->path;
+			$pattern = str_replace('/', '\/', $pattern);
 
-        //dividimos la ruta
-        $uri = explode("/", $route);
+			$pattern = '/^' . $pattern . '$/i';
+			$pattern = preg_replace('/{[A-Za-z0-9]+}/', '([A-Za-z0-9]+)', $pattern);
 
-        //almacenará el número de índice donde se requiera el parámetro {?} en la $ruta
-        $indexNum = [];
+			if (preg_match($pattern, $path, $match)) {
+				$desired_route = $route;
+			}
+		}
 
-        //almacenamos el número de índice, donde se requiere el parámetro {?} con la ayuda de regex
-        foreach ($uri as $index => $param) {
-            if (preg_match("/{.*}/", $param)) {
-                $indexNum[] = $index;
-            }
-        }
+		$url_parts = explode('/', $path);
+		$route_parts = explode('/', $desired_route->path);
 
-        //exploding request uri string to array to get
-        //the exact index number value of parameter from $_SERVER['REQUEST_URI']
-        $reqUri = explode("/", $reqUri);
+		foreach ($route_parts as $key => $value) {
+			if (!empty($value)) {
+				$value = str_replace('{', '', $value, $count1);
+				$value = str_replace('}', '', $value, $count2);
 
-        //ejecutando cada bucle para establecer el número de índice exacto
-        //esto ayudará en la coincidencia de ruta
-        foreach ($indexNum as $key => $index) {
+				if ($count1 == 1 && $count2 == 1) {
+					Params::set($value, $url_parts[$key]);
+				}
+			}
+		}
 
-            //en caso de que req uri con param index esté vacío entonces devuelve return
-            //porque la url no es válida para esta ruta
-            if (empty($reqUri[$index])) {
-                return;
-            }
 
-            //establecer parámetros con nombres de parámetros
-            $params[$paramKey[$key]] = $reqUri[$index];
+		if ($desired_route) {
+			if ($desired_route->method != strtolower($_SERVER['REQUEST_METHOD'])) {
+				http_response_code(404);
 
-            //esto es para crear una regex para comparar la dirección de la ruta
-            $reqUri[$index] = "{.*}";
-        }
+				echo '<h1>Route Not Allowed</h1>';
 
-        //Convertimos array a sting
-        $reqUri = implode("/", $reqUri);
+				die();
+			} else {
+				$actions = explode('@', $desired_route->action);
 
-        //Reemplazamos todos los / con \/
-        //regex para que coincida con la ruta está listo
-        $reqUri = str_replace("/", '\\/', $reqUri);
+				$controllerRoute = str_replace('/', '\\', $actions[0]);
+				$controllerClass = '\\App\\Controllers\\' . $controllerRoute;
 
-        //ahora ruta coincidente
-        if (preg_match("/$reqUri/", $route)) {
-            $controller = $action[0];
-            $action = $action[1];
+				$controller = new $controllerClass();
 
-            $this->callAction($controller, $action, $params);
-        }
-    }
+				$middlewares = $controller->getMiddlewares();
 
-    /**
-     * @throws Exception
-     */
-    protected function callAction(string $controller, string $action, array $params = [])
-    {
-        $controller = "App\\Controllers\\$controller";
-        $controller = new $controller;
+				foreach ($middlewares as $middleware) {
+					$middleware->handle();
+				}
 
-        if (!method_exists($controller, $action)) {
-            throw new Exception("$controller does not have the $action method");
-        }
+				if(!method_exists($controller, $actions[1])){
+					throw new Exception(
+						"{$controller} does not have the {$actions[1]} method."
+					);
+				}
 
-        return $controller->$action($params);
-    }
+				echo call_user_func(array($controller, $actions[1]));
+			}
+		} else {
+			throw new NotFoundException();
+		}
+	}
 }
