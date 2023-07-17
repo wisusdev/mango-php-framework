@@ -1,7 +1,9 @@
 <?php
 
 require "vendor/autoload.php";
-require_once "core/bootstrap.php";
+require "core/bootstrap.php";
+require "routes/web.php";
+require "routes/api.php";
 
 use Core\Route;
 use Core\Whoops;
@@ -9,7 +11,7 @@ use Core\Whoops;
 Whoops::run();
 
 try {
-	Route::load('Routes/web.php');
+	Route::handle($_SERVER['REQUEST_URI']);
 } catch (Exception $exception) {
 	die($exception->getMessage());
 }
