@@ -21,9 +21,7 @@ trait JWT
         $signature = hash_hmac('SHA256', "$headers_encoded.$payload_encoded", $secret, true);
         $signature_encoded = $this->base64UrlEncode($signature);
 
-        $jwt = "$headers_encoded.$payload_encoded.$signature_encoded";
-
-        return $jwt;
+		return "$headers_encoded.$payload_encoded.$signature_encoded";
     }
 
     function isJwtValid($jwt, $secret = 'secret'): bool

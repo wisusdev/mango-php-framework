@@ -6,50 +6,38 @@ use App\Constants\HttpStatus;
 
 trait HttpResponse
 {
-    /**
-     * Send Success API Response
-     *
-     * @param $data
-     * @param string $message
-     * @param int $status
-     * @return void
-     */
-    public function sendSuccess($data, string $message = 'Data Fetched Successfully', int $status = HttpStatus::OK)
-    {
+	/**
+	 * Send Success API Response
+	 *
+	 * @param array $data
+	 * @param string $message
+	 * @param int $status
+	 * @return bool|string
+	 */
+    public function sendSuccess(array $data, string $message = 'Data Fetched Successfully', int $status = HttpStatus::OK): bool|string
+	{
         $this->headers($status);
 
-        echo json_encode(array(
+        return json_encode(array(
             'response' => $data,
             'message' => $message,
             'code' => $status,
         ));
     }
 
-    /**
-     * Send Failed API Response
-     *
-     * @param string $message
-     * @param int $status
-     * @param array|null $data
-     */
-    public function sendError(string $message = 'Data Fetch Failed', int $status = HttpStatus::BAD_REQUEST, ?array $data = []) : void
-    {
+    public function sendError(string $message = 'Data Fetch Failed', int $status = HttpStatus::BAD_REQUEST, ?array $data = []): bool|string
+	{
         $this->headers($status);
 
-        echo json_encode(array(
+        return json_encode(array(
             'errors' => $data,
             'message' => $message,
             'code' => $status,
         ));
     }
 
-    /**
-     * Send Validation Failed API Response
-     *
-     * @param array|null $data
-     */
-    public function sendValidationError(array $data = [])
-    {
+    public function sendValidationError(array $data = []): void
+	{
         $status = HttpStatus::UNPROCESSABLE_ENTITY;
 
         $this->headers($status);
@@ -62,8 +50,8 @@ trait HttpResponse
     }
 
 
-    private function headers($status)
-    {
+    private function headers($status): void
+	{
         // clear the old headers
         header_remove();
         // set the actual code

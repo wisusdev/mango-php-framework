@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Api\V1;
+namespace App\Controllers\api\v1;
 
 use App\Controllers\BaseController;
 use App\Models\User;
@@ -11,7 +11,6 @@ use App\Resources\UserResource;
 use App\Services\Mail;
 use App\Traits\JWT;
 use App\Traits\HttpResponse;
-use Core\Params;
 
 class AuthController extends BaseController
 {
@@ -30,32 +29,28 @@ class AuthController extends BaseController
         $this->restPasswordRequest = new RestPasswordRequest();
     }
 
-    public function login()
-    {
+    public function login(): bool|string
+	{
         $this->validateRequest('loginRequest');
         $request = $this->loginRequest->getBody();
 
         $user = $this->user->find(['email' => $request['email']]);
 
-        if(!$user) {
-            return $this->sendError('User does not exist with this email address');
-        }
-
-        if (!password_verify($request['password'], $user->password)) {
-            return $this->sendError('Password is incorrect');
+        if (!password_verify($request['password'], $user->password) || !$user) {
+            return $this->sendError('User does not exist with this email address or password is incorrect');
         }
 
         $token = $this->generateToken($user->name);
-        $this->user->update(['id' => $user->id], ['token' => $this->generateToken($user->name)]);
+        $this->user->update(['id' => $user->id], ['token' => $token]);
 
-        $this->sendSuccess([
+        return $this->sendSuccess([
             'user' => (new UserResource())->resource($user),
             'token' => $token
         ]);
     }
 
-    public function register()
-    {
+    public function register(): bool|string
+	{
         $this->validateRequest('registerRequest');
         $request = $this->registerRequest->modifiedData();
         $user = $this->user->find(['email' => $request['email']]);
@@ -68,14 +63,14 @@ class AuthController extends BaseController
 
         $insertedUser = $this->user->create($request);
 
-        $this->sendSuccess([
+        return $this->sendSuccess([
             'token' => $request['token'],
             'user' => (new UserResource())->resource($insertedUser)
         ]);
     }
 
-    public function resetPassword()
-    {
+    public function resetPassword(): bool|string
+	{
         $this->validateRequest('restPasswordRequest');
         $request = $this->restPasswordRequest->getBody();
         $user = $this->user->find(['email' => $request['email']]);
@@ -84,23 +79,17 @@ class AuthController extends BaseController
             return $this->sendError('This Email is not exits');
         }
 
-        $password = rand(2345321232, 9876876778);
-        $updateUserPassword = $this->user->update(
-			['id' => $user->id],
-			['password' => password_hash($password, PASSWORD_DEFAULT)]
+		$token = $this->generateToken($user->name);
+        (new Mail())->send($user->email, $token);
+		$this->user->update(['id' => $user->id], ['token' => $token]);
+
+        return $this->sendSuccess([],
+			'The new token has been sent to your email address'
 		);
-
-        if(!$updateUserPassword) {
-            return $this->sendError('There is an error happend. Please Try again later');
-        }
-
-        (new Mail())->send($user->email, $password);
-
-        $this->sendSuccess([], 'The new Password has been sent to your email address');
     }
 
-    private function validateRequest($request)
-    {
+    private function validateRequest($request): void
+	{
         $validation = $this->{$request}->validation();
 
         if(!empty($validation)) {

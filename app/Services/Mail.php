@@ -9,9 +9,12 @@ use PHPMailer\PHPMailer\PHPMailer;
 class Mail
 {
     private PHPMailer $mailer;
-    private $mailSetting;
+    private mixed $mailSetting;
 
-    public function __construct()
+	/**
+	 * @throws Exception
+	 */
+	public function __construct()
     {
         $this->mailer = new PHPMailer(true);
         $this->mailSetting = Application::get('config')['mail'];
@@ -27,12 +30,12 @@ class Mail
         $this->mailer->isHTML(true);
     }
 
-    public function send($email, $password)
-    {
+    public function send($email, $token): void
+	{
         try {
             $this->mailer->addAddress($email, 'MSalah');
             $this->mailer->Subject = 'Your New Password';
-            $this->mailer->Body = "Hello User, <p>Your New Password is {$password}</p><br>Thanks";
+            $this->mailer->Body = "Hello User, <p>Your New Token is</p> <p>{$token}</p> Thanks";
 
             if(!$this->mailer->send()){
                 echo 'Message could not be sent.';

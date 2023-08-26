@@ -3,18 +3,22 @@
 namespace Database\migrations;
 
 use Core\Application;
+use Exception;
 
 class m0001_create_users_table
 {
-    private $builder;
+    private mixed $builder;
 
-    public function __construct()
+	/**
+	 * @throws Exception
+	 */
+	public function __construct()
     {
         $this->builder = Application::get('database');
     }
 
-    public function up()
-    {
+    public function up(): void
+	{
         $query = "CREATE TABLE users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 email VARCHAR(255) NOT NULL,
@@ -26,8 +30,8 @@ class m0001_create_users_table
         $this->builder->execute($query);
     }
 
-    public function down()
-    {
+    public function down(): void
+	{
         $query = "DROP TABLE users;";
         $this->builder->execute($query);
     }

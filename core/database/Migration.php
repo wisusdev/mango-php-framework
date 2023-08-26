@@ -1,21 +1,25 @@
 <?php
 
-namespace Core\Database;
+namespace Core\database;
 
 use Core\Application;
+use Exception;
 
 class Migration
 {
-    private $builder;
+    private mixed $builder;
 
-    public function __construct()
+	/**
+	 * @throws Exception
+	 */
+	public function __construct()
     {
         $this->builder = Application::get('database');
         $this->createMigrationsTable();
     }
 
-    public function doMigrations()
-    {
+    public function doMigrations(): void
+	{
         $appliedMigrations = $this->getAppliedMigrations();
         
         $newMigrations = [];
@@ -59,8 +63,8 @@ class Migration
         return $this->builder->execute("INSERT INTO migrations (migration) VALUES $str");
     }
 
-    private function createMigrationsTable()
-    {
+    private function createMigrationsTable(): void
+	{
         $query = "CREATE TABLE IF NOT EXISTS migrations (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 migration VARCHAR(255),
@@ -70,8 +74,8 @@ class Migration
         $this->builder->execute($query);
     }
 
-    private function log($message)
-    {
+    private function log($message): void
+	{
         echo "[" . date("Y-m-d H:i:s") . "] - " . $message . '<br/>';
     }
 }
