@@ -1,3 +1,3 @@
 <?php
 
-(new \Core\Database\Migration())->doMigrations();
+(new \Core\database\Migration())->doMigrations();
