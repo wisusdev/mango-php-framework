@@ -1,7 +1,7 @@
 <?php
 
 require "vendor/autoload.php";
-require "core/bootstrap.php";
+require "core/Bootstrap.php";
 require "routes/web.php";
 require "routes/api.php";
 
