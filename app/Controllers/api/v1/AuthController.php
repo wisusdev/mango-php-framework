@@ -11,6 +11,7 @@ use App\Resources\UserResource;
 use App\Services\Mail;
 use App\Traits\JWT;
 use App\Traits\HttpResponse;
+use Core\Logs;
 
 class AuthController extends BaseController
 {
@@ -31,22 +32,29 @@ class AuthController extends BaseController
 
     public function login(): bool|string
 	{
-        $this->validateRequest('loginRequest');
-        $request = $this->loginRequest->getBody();
+		$this->validateRequest('loginRequest');
+		$request = $this->loginRequest->getBody();
 
-        $user = $this->user->find(['email' => $request['email']]);
+        Logs::debug($request, 'INFO');
 
-        if (!password_verify($request['password'], $user->password) || !$user) {
-            return $this->sendError('User does not exist with this email address or password is incorrect');
+		$user = $this->user->find(['email' => $request['email']]);
+
+        if (!$user || !password_verify($request['password'], $user->password)) {
+            $message = 'User does not exist with this email address or password is incorrect';
+            Logs::debug($message);
+            return $this->sendError($message);
         }
 
         $token = $this->generateToken($user->name);
         $this->user->update(['id' => $user->id], ['token' => $token]);
 
-        return $this->sendSuccess([
+        $response = $this->sendSuccess([
             'user' => (new UserResource())->resource($user),
             'token' => $token
         ]);
+
+		Logs::debug($response);
+		return $response;
     }
 
     public function register(): bool|string
