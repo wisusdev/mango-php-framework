@@ -3,6 +3,7 @@
 use Core\Application;
 use Core\Database\Connection;
 use Core\Database\QueryBuilder;
+use Core\Logs;
 
 Application::bind('config', require 'Config/app.php');
 
@@ -13,6 +14,7 @@ try {
         )
     );
 } catch (Exception $e) {
+    Logs::debug($e->getMessage());
     die($e->getMessage());
 }
 
