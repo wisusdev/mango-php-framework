@@ -4,23 +4,26 @@ namespace Database\migrations;
 
 use Core\Application;
 
-class m0004_add_token_to_users_table
+class m0002_add_token_to_users_table
 {
-    private $builder;
+    private mixed $builder;
 
-    public function __construct()
+	/**
+	 * @throws \Exception
+	 */
+	public function __construct()
     {
         $this->builder = Application::get('database');
     }
 
-    public function up()
-    {
+    public function up(): void
+	{
         $query = "ALTER TABLE users ADD COLUMN token TEXT NULL AFTER password";
         $this->builder->execute($query);
     }
 
-    public function down()
-    {
+    public function down(): void
+	{
         $query = "DROP TABLE users;";
         $this->builder->execute($query);
     }
